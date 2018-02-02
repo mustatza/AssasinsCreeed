@@ -1,17 +1,24 @@
 package ro.coderdojo.ac;
 
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
 
 
 public final class EventsListener implements Listener {
 
 	@EventHandler
-	public void onLogin(PlayerJoinEvent event) {
-		Player player = event.getPlayer();
-		player.sendMessage("Salut " + ChatColor.AQUA + player.getName() + ChatColor.WHITE + "! Felicitări pentru primul mod de Minecraft!");
+	public void onBlockBreak(BlockBreakEvent event) {
+	event.setCancelled(true);
+	}
+        @EventHandler
+	public void onBlockBurn(BlockBurnEvent event) {
+	event.setCancelled(true);
+	}
+         @EventHandler
+	public void onBlockIgnite(BlockIgniteEvent event) {
+	event.setCancelled(true);
 	}
 }
