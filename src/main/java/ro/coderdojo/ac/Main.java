@@ -12,7 +12,7 @@ public class Main extends JavaPlugin {
     public void onEnable() {
 		getServer().getPluginManager().registerEvents(new EventsListener(), this);
 		
-		this.getCommand("CoderDojo").setExecutor(new CoderDojoCommand());
+		this.getCommand("edit").setExecutor(new CoderDojoCommand());
     }
 
 }

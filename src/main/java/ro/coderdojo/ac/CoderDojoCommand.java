@@ -6,10 +6,12 @@ import org.bukkit.command.CommandSender;
 
 
 public class CoderDojoCommand implements CommandExecutor {
-
+        public static boolean isEnabled = false;
+        
 	@Override
 	public boolean onCommand(CommandSender commandSender, Command command, String label, String[] args) {
-		commandSender.sendMessage("Ai reușit să creezi o comandă în Minecraft cu Spigot");
-		return false;
+		commandSender.sendMessage("Edit Enabled!");
+                isEnabled = !isEnabled;
+		return true;
 	}
 }
