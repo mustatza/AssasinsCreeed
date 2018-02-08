@@ -1,13 +1,11 @@
-
 package ro.coderdojo.ac;
 
+import java.util.HashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -17,20 +15,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import ro.coderdojo.ac.CoderDojoCommand;
-
-
 
 public final class EventsListener implements Listener {
+
+    HashMap<String, String> team = new HashMap();
 
     public EventsListener() {
         World world = Bukkit.getServer().getWorld("world");
@@ -73,7 +73,6 @@ public final class EventsListener implements Listener {
     public void onWallProximity(PlayerMoveEvent event) {
         Block atPlayersFeet = event.getTo().getBlock();
         if (restoreblock != null) {
-            System.out.println((restoreblock.getLocation() != atPlayersFeet.getLocation()) + " - " + restoreblock.getLocation() + "  " + atPlayersFeet.getLocation());
             if (restoreblock.getLocation().getBlockX() != atPlayersFeet.getLocation().getBlockX()
                     || restoreblock.getLocation().getBlockY() != atPlayersFeet.getLocation().getBlockY()
                     || restoreblock.getLocation().getBlockZ() != atPlayersFeet.getLocation().getBlockZ()) {
@@ -100,6 +99,50 @@ public final class EventsListener implements Listener {
         Player player = event.getPlayer();
         player.setGameMode(GameMode.SURVIVAL);
         player.teleport(new Location(event.getPlayer().getWorld(), -1598.383, 64.00000, -220.431, -89.8f, 6.9f));
+
+    }
+
+    @EventHandler
+    public void onFoodChange(FoodLevelChangeEvent event) {
+        event.setCancelled(true);
+        event.setFoodLevel(20);
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        Action action = event.getAction();
+        if (event.getClickedBlock() == null) {
+            return;
+        }
+        Material material = event.getClickedBlock().getState().getType();
+        Location location = event.getClickedBlock().getState().getLocation();
+        if (action == Action.RIGHT_CLICK_BLOCK && material == Material.WOOD_BUTTON) {
+            System.out.println("Click: " + location);
+            if (location.getBlockX() == -1594.0 && location.getBlockY() == 65.0 && location.getBlockZ() == -224.0) {
+                player.teleport(new Location(player.getWorld(), -1498.590, 81, -239.329));
+                team.put(player.getName(), "Assasin");
+                player.sendMessage("you are assasin");
+            }
+
+            if (location.getBlockX() == -1594.0 && location.getBlockY() == 65.0 && location.getBlockZ() == -218.0) {
+                player.teleport(new Location(player.getWorld(), -1312.587, 69, -431.370));
+                team.put(player.getName(), "Templier");
+                player.sendMessage("you are templier");
+            }
+
+        }
+
+    }
+
+    @EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        if (team.get(event.getPlayer().getName()).equals("Assasin")) {
+            event.setRespawnLocation(new Location(event.getPlayer().getWorld(), -1498.590, 81, -239.329));
+        }
+        if (team.get(event.getPlayer().getName()).equals("Templier")) {
+            event.setRespawnLocation(new Location(event.getPlayer().getWorld(), -1312.587, 69, -431.370));
+        }
 
     }
 
