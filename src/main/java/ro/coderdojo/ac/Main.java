@@ -10,7 +10,7 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-		getServer().getPluginManager().registerEvents(new EventsListener(), this);
+		getServer().getPluginManager().registerEvents(new EventsListener(this), this);
 		
 		this.getCommand("edit").setExecutor(new CoderDojoCommand());
     }

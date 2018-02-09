@@ -24,15 +24,19 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public final class EventsListener implements Listener {
 
     HashMap<String, String> team = new HashMap();
+    JavaPlugin plugin;
 
-    public EventsListener() {
+    public EventsListener(JavaPlugin plugin) {
+        this.plugin = plugin;
         World world = Bukkit.getServer().getWorld("world");
         for (Entity e : world.getEntities()) {
             if (e.getType() != EntityType.VILLAGER && e.getType() != EntityType.PARROT) {
@@ -97,9 +101,26 @@ public final class EventsListener implements Listener {
     @EventHandler
     public void playerJoined(PlayerJoinEvent event) throws Exception {
         Player player = event.getPlayer();
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                player.setResourcePack("http://app.narvi.ro/ac-resourcePack.zip");
+            }
+        }, 1);
+        
+
         player.setGameMode(GameMode.SURVIVAL);
         player.teleport(new Location(event.getPlayer().getWorld(), -1598.383, 64.00000, -220.431, -89.8f, 6.9f));
 
+    }
+
+    @EventHandler
+    public void onResourcePackStatus(PlayerResourcePackStatusEvent event) throws Exception {
+        System.out.println("Client resource action: " + event.getStatus());
+        if (event.getStatus() == PlayerResourcePackStatusEvent.Status.DECLINED) {
+            event.getPlayer().kickPlayer("you must accept the resourcePack");
+        }
     }
 
     @EventHandler
