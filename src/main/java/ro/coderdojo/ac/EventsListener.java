@@ -23,6 +23,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -164,7 +165,7 @@ public final class EventsListener implements Listener {
             }
             if ((team.get(player.getName()).equals("Assasin") && team.get(other.getName()).equals("Templier"))
                     || (team.get(player.getName()).equals("Templier") && team.get(other.getName()).equals("Assasin"))) {
-//                other.setHealth(0);
+//              other.setHealth(0);
             }
 
         }
@@ -187,7 +188,20 @@ public final class EventsListener implements Listener {
         if (event.getEntityType() == EntityType.PLAYER && event.getCause() == EntityDamageEvent.DamageCause.FALL) {
             event.setCancelled(true);
         }
+    }
 
+    @EventHandler
+    public void onFight(EntityDamageByEntityEvent event) {
+        if (event.getEntity().getType() != EntityType.PLAYER) {
+            return;
+        }
+        if (event.getDamager().getType() != EntityType.PLAYER) {
+            return;
+        }
+        Player damaged = (Player)event.getEntity();
+        Player damager = (Player)event.getDamager();
+        damager.sendMessage("you began a fight with "+damaged.getName());
+        damaged.sendMessage(damager.getName()+" began a fight with you ");
     }
 
     private void checkPressedButton(PlayerInteractEvent event, Player player) {
