@@ -6,7 +6,7 @@ import org.bukkit.command.CommandSender;
 
 
 public class CoderDojoCommand implements CommandExecutor {
-        public static boolean isEnabled = false;
+        public static boolean isEnabled = true;
         
 	@Override
 	public boolean onCommand(CommandSender commandSender, Command command, String label, String[] args) {

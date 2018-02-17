@@ -1,11 +1,14 @@
 package ro.coderdojo.ac;
 
 import java.util.HashMap;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -20,7 +23,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -94,13 +99,15 @@ public final class EventsListener implements Listener {
 
             }
         }
-        event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 18000, 2));
+        event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 18000, 1));
         event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 18000, 1));
     }
 
     @EventHandler
     public void playerJoined(PlayerJoinEvent event) throws Exception {
         Player player = event.getPlayer();
+        AttributeInstance healthAttribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        healthAttribute.setBaseValue(20.00);
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
             @Override
@@ -108,7 +115,6 @@ public final class EventsListener implements Listener {
                 player.setResourcePack("http://app.narvi.ro/ac-resourcePack.zip");
             }
         }, 1);
-        
 
         player.setGameMode(GameMode.SURVIVAL);
         player.teleport(new Location(event.getPlayer().getWorld(), -1598.383, 64.00000, -220.431, -89.8f, 6.9f));
@@ -132,6 +138,59 @@ public final class EventsListener implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        checkPressedButton(event, player);
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEntityEvent event) {
+        Player player = event.getPlayer();
+        if (event.getRightClicked() instanceof Player) {
+            Player other = (Player) event.getRightClicked();
+            List<Block> blocks = other.getLineOfSight(null, 10);
+            boolean vazut = false;
+            for (Block block : blocks) {
+                if (block.getLocation().getBlockX() == player.getLocation().getBlockX()
+                        && block.getLocation().getBlockY() == player.getLocation().getBlockY()
+                        && block.getLocation().getBlockZ() == player.getLocation().getBlockZ()) {
+                    vazut = true;
+                }
+            }
+            if (vazut) {
+                player.sendMessage(Math.random() + " ma vede");
+                other.sendMessage(Math.random() + " te vad");
+            } else {
+                player.sendMessage(Math.random() + " NUU  ma vede");
+                other.sendMessage(Math.random() + " NUU te vad");
+            }
+            if ((team.get(player.getName()).equals("Assasin") && team.get(other.getName()).equals("Templier"))
+                    || (team.get(player.getName()).equals("Templier") && team.get(other.getName()).equals("Assasin"))) {
+//                other.setHealth(0);
+            }
+
+        }
+
+    }
+
+    @EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        if (team.get(event.getPlayer().getName()).equals("Assasin")) {
+            event.setRespawnLocation(new Location(event.getPlayer().getWorld(), -1498.590, 81, -239.329));
+        }
+        if (team.get(event.getPlayer().getName()).equals("Templier")) {
+            event.setRespawnLocation(new Location(event.getPlayer().getWorld(), -1312.587, 69, -431.370));
+        }
+
+    }
+
+    @EventHandler
+    public void onDemage(EntityDamageEvent event) {
+        if (event.getEntityType() == EntityType.PLAYER && event.getCause() == EntityDamageEvent.DamageCause.FALL) {
+            event.setCancelled(true);
+        }
+
+    }
+
+    private void checkPressedButton(PlayerInteractEvent event, Player player) {
         Action action = event.getAction();
         if (event.getClickedBlock() == null) {
             return;
@@ -153,18 +212,5 @@ public final class EventsListener implements Listener {
             }
 
         }
-
     }
-
-    @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
-        if (team.get(event.getPlayer().getName()).equals("Assasin")) {
-            event.setRespawnLocation(new Location(event.getPlayer().getWorld(), -1498.590, 81, -239.329));
-        }
-        if (team.get(event.getPlayer().getName()).equals("Templier")) {
-            event.setRespawnLocation(new Location(event.getPlayer().getWorld(), -1312.587, 69, -431.370));
-        }
-
-    }
-
 }
