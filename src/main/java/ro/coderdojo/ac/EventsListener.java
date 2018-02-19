@@ -1,5 +1,6 @@
 package ro.coderdojo.ac;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -35,6 +36,12 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import net.minecraft.server.v1_12_R1.EntityPlayer;
+import net.minecraft.server.v1_12_R1.PacketPlayOutNamedEntitySpawn;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
+import com.mojang.authlib.GameProfile;
+import java.lang.reflect.Method;
+import net.md_5.bungee.api.ChatColor;
 
 public final class EventsListener implements Listener {
 
@@ -80,7 +87,28 @@ public final class EventsListener implements Listener {
     BlockState restoreblock;
 
     @EventHandler
-    public void onWallProximity(PlayerMoveEvent event) {
+    public void onWallProximity(PlayerMoveEvent event) throws Exception {
+
+//        EntityPlayer pname=((CraftPlayer)event.getPlayer()).getHandle();
+//        pname.displayName="♥♥♥♥♥";
+        Method getHandle = event.getPlayer().getClass().getMethod("getHandle");
+        Object entityPlayer = getHandle.invoke(event.getPlayer());
+        Class<?> entityHuman = entityPlayer.getClass().getSuperclass();
+        Field gameProfileField;
+        int majVersion = Integer.parseInt(Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3].replaceAll("(v|R[0-9]+)", "").split("_")[0]);
+        int minVersion = Integer.parseInt(Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3].replaceAll("(v|R[0-9]+)", "").split("_")[1]);
+        if (majVersion >= 1 && minVersion >= 9) {
+            gameProfileField = entityHuman.getDeclaredField("g");
+        } else {
+            gameProfileField = entityHuman.getDeclaredField("bH");
+        }
+        gameProfileField.setAccessible(true);
+        gameProfileField.set(entityPlayer, new GameProfile(event.getPlayer().getUniqueId(), ChatColor.RED + "♥♥♥" + ChatColor.WHITE + "♥♥"));
+        for (Player players : Bukkit.getOnlinePlayers()) {
+            players.hidePlayer(event.getPlayer());
+            players.showPlayer(event.getPlayer());
+        }
+
         Block atPlayersFeet = event.getTo().getBlock();
         if (restoreblock != null) {
             if (restoreblock.getLocation().getBlockX() != atPlayersFeet.getLocation().getBlockX()
@@ -131,19 +159,22 @@ public final class EventsListener implements Listener {
     }
 
     @EventHandler
-    public void onFoodChange(FoodLevelChangeEvent event) {
+    public void onFoodChange(FoodLevelChangeEvent event
+    ) {
         event.setCancelled(true);
         event.setFoodLevel(20);
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
+    public void onPlayerInteract(PlayerInteractEvent event
+    ) {
         Player player = event.getPlayer();
         checkPressedButton(event, player);
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEntityEvent event) {
+    public void onPlayerInteract(PlayerInteractEntityEvent event
+    ) {
         Player player = event.getPlayer();
         if (event.getRightClicked() instanceof Player) {
             Player other = (Player) event.getRightClicked();
@@ -173,7 +204,8 @@ public final class EventsListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
+    public void onPlayerRespawn(PlayerRespawnEvent event
+    ) {
         if (team.get(event.getPlayer().getName()).equals("Assasin")) {
             event.setRespawnLocation(new Location(event.getPlayer().getWorld(), -1498.590, 81, -239.329));
         }
@@ -184,24 +216,30 @@ public final class EventsListener implements Listener {
     }
 
     @EventHandler
-    public void onDemage(EntityDamageEvent event) {
+    public void onDemage(EntityDamageEvent event
+    ) {
         if (event.getEntityType() == EntityType.PLAYER && event.getCause() == EntityDamageEvent.DamageCause.FALL) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
-    public void onFight(EntityDamageByEntityEvent event) {
+    public void onFight(EntityDamageByEntityEvent event
+    ) {
         if (event.getEntity().getType() != EntityType.PLAYER) {
             return;
         }
         if (event.getDamager().getType() != EntityType.PLAYER) {
             return;
         }
-        Player damaged = (Player)event.getEntity();
-        Player damager = (Player)event.getDamager();
-        damager.sendMessage("you began a fight with "+damaged.getName());
-        damaged.sendMessage(damager.getName()+" began a fight with you ");
+        Player damaged = (Player) event.getEntity();
+        Player damager = (Player) event.getDamager();
+        EntityPlayer pname = ((CraftPlayer) damaged).getHandle();
+        pname.displayName = "♥♥♥♥♥";
+        ((CraftPlayer) damager).getHandle().playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn(pname));
+
+        damager.sendMessage("you began a fight with " + damaged.getName());
+        damaged.sendMessage(damager.getName() + " began a fight with you ");
     }
 
     private void checkPressedButton(PlayerInteractEvent event, Player player) {
